@@ -3,20 +3,7 @@ import { Spin, Typography } from "antd";
 
 const { Title } = Typography;
 
-const LoadingAlerts = ({ loading, alert }) => {
-  if (loading) {
-    return (
-      <div
-        style={{
-          width: "100%",
-          margin: "auto",
-        }}
-      >
-        <Spin size="large" />
-      </div>
-    );
-  }
-
+const LoadingAlerts = ({ alert }) => {
   if (alert) {
     return (
       <>

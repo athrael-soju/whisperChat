@@ -7,7 +7,7 @@ import useRecordAudio from "./hooks/useRecordAudio";
 import useButtonStates from "./hooks/useButtonStates";
 
 function MainApp({ user }) {
-  const { sendMessage, loading } = useMessageHandler(
+  const { sendMessage, loading: messageLoading } = useMessageHandler(
     user.username,
     user.usertype
   );
@@ -25,7 +25,7 @@ function MainApp({ user }) {
     useRecordAudio(sendMessage, playResponse, stopOngoingAudio, activeButton);
 
   const getAlert = () => {
-    if (transcribing) {
+    if (messageLoading) {
       return {
         message: "AI is thinking",
         type: "info",
@@ -71,7 +71,7 @@ function MainApp({ user }) {
             marginBottom: "1rem",
           }}
         >
-          <LoadingAlerts loading={loading} alert={getAlert()} />
+          <LoadingAlerts alert={getAlert()} />
           <VoicePromptCard
             startRecording={startRecording}
             pauseRecording={pauseRecording}
