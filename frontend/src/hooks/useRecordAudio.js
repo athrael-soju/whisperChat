@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { debounce } from "lodash";
 import { useWhisper } from "@chengsokdara/use-whisper";
 import env from "react-dotenv";
 
@@ -13,7 +14,7 @@ const useRecordAudio = (
   activeButton
 ) => {
   const [recording, setRecording] = useState(false);
-  const isMicActive = useAudioSensitivity();
+  const { isMicActive, mediaRecorder } = useAudioSensitivity();
   const gracePeriodTimeout = useRef(null);
 
   const {
@@ -81,6 +82,12 @@ const useRecordAudio = (
     pauseRecording,
     startRecording,
     stopRecording,
+    mediaRecorder,
+    isMicActive:
+      isMicActive &&
+      debounce(() => {
+        return isMicActive;
+      }, 2000),
   };
 };
 

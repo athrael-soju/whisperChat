@@ -3,6 +3,7 @@ import env from "react-dotenv";
 
 const useAudioSensitivity = () => {
   const [isMicActive, setIsMicActive] = useState(false);
+  const [mediaRecorder, setMediaRecorder] = useState();
 
   useEffect(() => {
     let audioContext, analyser, audioStreamSource;
@@ -10,6 +11,16 @@ const useAudioSensitivity = () => {
       let stream = await navigator.mediaDevices.getUserMedia({
         audio: true,
       });
+      const recorder = new MediaRecorder(stream);
+      setMediaRecorder(recorder);
+
+      recorder.start();
+
+      recorder.addEventListener("dataavailable", (event) => {
+        recorder?.stream?.getTracks().forEach((t) => t.stop());
+        setMediaRecorder(undefined);
+      });
+
       audioContext = new AudioContext();
       audioStreamSource = audioContext.createMediaStreamSource(stream);
       analyser = audioContext.createAnalyser();
@@ -47,7 +58,7 @@ const useAudioSensitivity = () => {
       }
     };
   }, []);
-  return isMicActive;
+  return { isMicActive, mediaRecorder };
 };
 
 export default useAudioSensitivity;

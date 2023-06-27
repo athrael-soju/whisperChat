@@ -1,4 +1,6 @@
 import React from "react";
+import { LiveAudioVisualizer } from "react-audio-visualize";
+
 import VoicePromptCard from "./components/VoicePromptCard";
 import LoadingAlerts from "./components/LoadingAlerts";
 import useMessageHandler from "./hooks/useMessageHandler";
@@ -11,7 +13,11 @@ function MainApp({ user }) {
     user.username,
     user.usertype
   );
-  const { playResponse, stopOngoingAudio } = useAudioHandler();
+  const {
+    playResponse,
+    stopOngoingAudio,
+    loading: speakLoading,
+  } = useAudioHandler();
   const {
     isPaused,
     isRecording,
@@ -21,13 +27,28 @@ function MainApp({ user }) {
     setActiveButton,
   } = useButtonStates();
 
-  const { transcribing, pauseRecording, startRecording, stopRecording } =
-    useRecordAudio(sendMessage, playResponse, stopOngoingAudio, activeButton);
+  const {
+    pauseRecording,
+    startRecording,
+    stopRecording,
+    isMicActive,
+    mediaRecorder,
+  } = useRecordAudio(sendMessage, playResponse, stopOngoingAudio, activeButton);
 
   const getAlert = () => {
+    if (!isRecording) {
+      return null;
+    }
     if (messageLoading) {
       return {
         message: "AI is thinking",
+        type: "info",
+      };
+    }
+
+    if (speakLoading) {
+      return {
+        message: "AI is speaking",
         type: "info",
       };
     }
@@ -36,13 +57,6 @@ function MainApp({ user }) {
       return {
         message: "Paused",
         type: "warning",
-      };
-    }
-
-    if (isRecording) {
-      return {
-        message: "User is speaking",
-        type: "info",
       };
     }
 
@@ -60,7 +74,7 @@ function MainApp({ user }) {
           margin: "auto",
           width: "100%",
           height: "calc(100vh - 64px)", // minus navbar height which is 64px
-          maxWidth: "400px",
+          maxWidth: "350px",
         }}
       >
         <div
@@ -72,6 +86,14 @@ function MainApp({ user }) {
           }}
         >
           <LoadingAlerts alert={getAlert()} />
+          {mediaRecorder && (
+            <LiveAudioVisualizer
+              mediaRecorder={mediaRecorder}
+              width={350}
+              height={55}
+              barColor="#fff"
+            />
+          )}
           <VoicePromptCard
             startRecording={startRecording}
             pauseRecording={pauseRecording}

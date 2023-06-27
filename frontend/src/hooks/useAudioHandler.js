@@ -1,48 +1,40 @@
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import env from "react-dotenv";
-import {
-  useQuery,
-  useMutation,
-  useQueryClient,
-  QueryClient,
-  QueryClientProvider,
-} from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import axios from "axios";
-import fetch from "../libs/fetch";
 
 const useAudioHandler = () => {
   const audioRef = useRef(null);
+  const [loading, setLoading] = useState(false);
   const url = `${env.SERVER_ADDRESS}:${env.SERVER_PORT}${env.SERVER_SPEAK_ENDPOINT}`;
   const mutation = useMutation({
     mutationFn: (data) => {
       return axios.post(url, data, {
         headers: { "Content-Type": "application/json" },
+        responseType: "blob",
       });
     },
   });
 
-  console.log({
-    data: mutation.data,
-    loading: mutation.loading,
-  });
-
   const playResponse = async (text) => {
     try {
-      await mutation.mutateAsync(JSON.stringify({ text }));
-
-      // const response = await mutate(
-      //   fetch(url, {
-      //     // method: "POST",
-
-      //     // body: ,
-      //   })
-      // );
-
-      const blob = await mutation.data.data.blob();
-      const audioUrl = URL.createObjectURL(blob);
-      audioRef.current = new Audio(audioUrl);
-      audioRef.current.play();
+      setLoading(true);
+      await mutation.mutateAsync(
+        { text },
+        {
+          onSuccess: async (res) => {
+            const blob = res?.data;
+            const audioUrl = URL.createObjectURL(blob);
+            audioRef.current = new Audio(audioUrl);
+            audioRef.current.play();
+            audioRef.current.onended = () => {
+              setLoading(false);
+            };
+          },
+        }
+      );
     } catch (error) {
+      setLoading(false);
       console.error("Error fetching audio response:", error);
     }
   };
@@ -54,7 +46,7 @@ const useAudioHandler = () => {
     }
   };
 
-  return { playResponse, stopOngoingAudio };
+  return { playResponse, stopOngoingAudio, loading, blob: mutation.data?.data };
 };
 
 export default useAudioHandler;
