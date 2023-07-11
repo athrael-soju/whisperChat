@@ -1,7 +1,10 @@
-import { Button, Layout } from "antd";
+import React from "react";
+const { Button, Layout } = require("antd");
 import { gray } from "@ant-design/colors";
 import { signIn, signOut, useSession } from "next-auth/react";
 import styles from "./header.module.css";
+import "antd/lib/button/style";
+
 
 const { Header: AntdHeader } = Layout;
 
